@@ -34,8 +34,14 @@ class WhatsAppService {
               '--disable-gpu',
               '--disable-software-rasterizer',
               '--disable-extensions',
-              '--single-process'
-            ]
+              '--single-process',
+              '--disable-blink-features=AutomationControlled',
+              '--disable-features=IsolateOrigins,site-per-process',
+              '--disable-web-security',
+              '--disable-features=VizDisplayCompositor'
+            ],
+            timeout: 60000, // 60 secondes de timeout
+            ignoreHTTPSErrors: true
           },
           webVersionCache: {
             type: 'remote',
@@ -46,15 +52,22 @@ class WhatsAppService {
               cachePath: './.wwebjs_cache/',
               clearCache: false
             }
-          }
+          },
+          // Options supplémentaires pour améliorer la connexion
+          takeoverOnConflict: false,
+          takeoverTimeoutMs: 0,
+          qrMaxRetries: 5, // Nombre de tentatives pour générer le QR code
+          restartOnAuthFail: true
         });
 
         // Événement QR Code
         this.client.on('qr', (qr) => {
           console.log('\n📱 QR CODE POUR CONNEXION WHATSAPP:');
-          console.log('Scannez ce QR code avec votre téléphone WhatsApp\n');
+          console.log('Scannez ce QR code avec votre téléphone WhatsApp');
+          console.log('⚠️ Le QR code expire dans 20 secondes. Scannez rapidement !\n');
           qrcode.generate(qr, { small: true });
           this.qrCode = qr;
+          console.log('✅ QR Code généré et disponible pour scan');
         });
 
         // Événement authentification réussie
@@ -84,6 +97,22 @@ class WhatsAppService {
           console.log('\n⚠️ WhatsApp déconnecté:', reason);
           this.isReady = false;
           this.isAuthenticated = false;
+          this.qrCode = null;
+        });
+
+        // Événement loading_screen
+        this.client.on('loading_screen', (percent, message) => {
+          console.log(`\n⏳ Chargement: ${percent}% - ${message}`);
+        });
+
+        // Événement change_state
+        this.client.on('change_state', (state) => {
+          console.log(`\n🔄 Changement d'état: ${state}`);
+        });
+
+        // Gestion des erreurs de connexion
+        this.client.on('remote_session_saved', () => {
+          console.log('\n💾 Session distante sauvegardée');
         });
 
         // Initialiser le client
@@ -203,11 +232,28 @@ class WhatsAppService {
    */
   async disconnect() {
     if (this.client) {
-      await this.client.destroy();
+      try {
+        await this.client.destroy();
+        console.log('✅ WhatsApp déconnecté proprement');
+      } catch (error) {
+        console.error('⚠️ Erreur lors de la déconnexion:', error);
+      }
+      this.client = null;
       this.isReady = false;
       this.isAuthenticated = false;
-      console.log('WhatsApp déconnecté');
+      this.qrCode = null;
     }
+  }
+
+  /**
+   * Réinitialise complètement le client WhatsApp
+   */
+  async reset() {
+    console.log('🔄 Réinitialisation complète de WhatsApp...');
+    await this.disconnect();
+    // Attendre un peu avant de réinitialiser
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await this.initialize();
   }
 
   /**

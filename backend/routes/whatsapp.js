@@ -133,6 +133,43 @@ router.post('/disconnect', async (req, res) => {
   }
 });
 
+/**
+ * Route pour réinitialiser/reconnecter WhatsApp
+ * POST /api/whatsapp/reconnect
+ */
+router.post('/reconnect', async (req, res) => {
+  if (!whatsappService) {
+    return res.status(500).json({
+      success: false,
+      error: 'Service WhatsApp non initialisé'
+    });
+  }
+
+  try {
+    console.log('🔄 Réinitialisation de WhatsApp...');
+    
+    // Utiliser la méthode reset si elle existe, sinon disconnect + initialize
+    if (whatsappService.reset) {
+      await whatsappService.reset();
+    } else {
+      await whatsappService.disconnect();
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await whatsappService.initialize();
+    }
+    
+    res.json({
+      success: true,
+      message: 'WhatsApp réinitialisé. Un nouveau QR code sera généré.'
+    });
+  } catch (error) {
+    console.error('❌ Erreur lors de la réinitialisation:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = { router, initializeWhatsAppService };
 
 
