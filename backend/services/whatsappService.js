@@ -37,18 +37,13 @@ class WhatsAppService {
               '--single-process',
               '--disable-gpu'
             ],
-            timeout: 90000,
-            ignoreHTTPSErrors: true
+            timeout: 120000, // 2 minutes max pour initialisation
+            ignoreHTTPSErrors: true,
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
           },
           webVersionCache: {
             type: 'remote',
-            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wppconnect/main/wppconnect/src/lib/wapi.js',
-            options: {
-              restartOnAuthFail: true,
-              cacheEnabled: true,
-              cachePath: './.wwebjs_cache/',
-              clearCache: false
-            }
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
           },
           qrMaxRetries: 10,
           restartOnAuthFail: true,
@@ -122,15 +117,15 @@ class WhatsAppService {
           reject(error);
         });
 
-        // Timeout pour l'initialisation (2 minutes)
+        // Timeout pour l'initialisation (90 secondes)
         const initTimeout = setTimeout(() => {
           if (!this.isReady && !this.qrCode) {
-            console.error('\n⏰ Timeout: Le QR code n\'a pas été généré dans les 2 minutes');
+            console.error('\n⏰ Timeout: Le QR code n\'a pas été généré dans les 90 secondes');
             console.log('🔄 Tentative de réinitialisation...');
             this.client.destroy().catch(() => {});
             reject(new Error('Timeout: Impossible de générer le QR code. Réessayez.'));
           }
-        }, 120000); // 2 minutes
+        }, 90000); // 90 secondes
 
         // Nettoyer le timeout si on obtient le QR code ou si on est prêt
         this.client.on('qr', () => {

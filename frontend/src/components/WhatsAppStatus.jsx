@@ -32,7 +32,7 @@ function WhatsAppStatus({ status }) {
       console.log('🔍 Fetching QR code from:', qrCodeUrl)
       
       const response = await axios.get(qrCodeUrl, {
-        timeout: 3000, // Timeout réduit pour plus de réactivité
+        timeout: 2000, // Timeout ultra court
         headers: {
           'Content-Type': 'application/json'
         }
@@ -78,12 +78,12 @@ function WhatsAppStatus({ status }) {
     if (status && !status.ready && !hasQRCodeRef.current) {
       // Vérifier immédiatement
       fetchQRCode()
-      // Vérifier le QR code toutes les 1.5 secondes pour plus de réactivité
+      // Vérifier le QR code toutes les 0.8 secondes pour réactivité maximale
       intervalRef.current = setInterval(() => {
         if (!hasQRCodeRef.current && !isFetching) {
           fetchQRCode()
         }
-      }, 1500)
+      }, 800)
     } else if (status && status.ready) {
       // Si connecté, nettoyer le QR code
       setQrCode(null)

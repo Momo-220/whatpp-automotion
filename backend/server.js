@@ -133,8 +133,8 @@ initializeWhatsAppService(whatsappService);
 
 // Initialiser le service d'envoi
 initializeServices(whatsappService, {
-  messageDelay: parseInt(process.env.MESSAGE_DELAY) || 1000, // 1 seconde par défaut (optimisé)
-  batchSize: parseInt(process.env.BATCH_SIZE) || 3 // 3 messages en parallèle
+  messageDelay: parseInt(process.env.MESSAGE_DELAY) || 500, // 0.5 seconde par défaut (très rapide)
+  batchSize: parseInt(process.env.BATCH_SIZE) || 5 // 5 messages en parallèle (optimisé)
 });
 
 // Démarrer le serveur
