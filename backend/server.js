@@ -151,10 +151,27 @@ app.listen(PORT, async () => {
   
   // Initialiser WhatsApp (ne pas bloquer le démarrage du serveur)
   console.log('\n📱 Initialisation de WhatsApp...');
-  whatsappService.initialize().catch((error) => {
-    console.error('❌ Erreur lors de l\'initialisation WhatsApp:', error);
-    console.log('💡 Le serveur continue de fonctionner. Utilisez /api/whatsapp/reconnect pour réessayer.');
-  });
+  console.log('⏳ Attente de la génération du QR code...');
+  
+  whatsappService.initialize()
+    .then(() => {
+      console.log('✅ WhatsApp initialisé avec succès');
+    })
+    .catch((error) => {
+      console.error('❌ Erreur lors de l\'initialisation WhatsApp:', error);
+      console.error('📊 Type d\'erreur:', error.constructor.name);
+      console.error('📄 Message:', error.message);
+      console.log('💡 Le serveur continue de fonctionner. Utilisez /api/whatsapp/reconnect pour réessayer.');
+    });
+  
+  // Vérifier périodiquement si le QR code est généré
+  setInterval(() => {
+    const qrCode = whatsappService.getQRCode();
+    const isReady = whatsappService.isClientReady();
+    if (!isReady && !qrCode) {
+      console.log('⏳ En attente du QR code... (Client prêt:', isReady, ', QR:', !!qrCode, ')');
+    }
+  }, 10000); // Vérifier toutes les 10 secondes
 });
 
 // Gestion propre de l'arrêt

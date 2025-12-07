@@ -62,12 +62,16 @@ class WhatsAppService {
 
         // Événement QR Code
         this.client.on('qr', (qr) => {
-          console.log('\n📱 QR CODE POUR CONNEXION WHATSAPP:');
+          console.log('\n📱 ============================================');
+          console.log('📱 QR CODE POUR CONNEXION WHATSAPP:');
+          console.log('📱 ============================================');
           console.log('Scannez ce QR code avec votre téléphone WhatsApp');
-          console.log('⚠️ Le QR code expire dans 20 secondes. Scannez rapidement !\n');
+          console.log('⚠️ Le QR code expire dans 20 secondes. Scannez rapidement !');
+          console.log('📱 Longueur du QR code:', qr.length, 'caractères');
           qrcode.generate(qr, { small: true });
           this.qrCode = qr;
-          console.log('✅ QR Code généré et disponible pour scan');
+          console.log('✅ QR Code généré et stocké - Disponible via API');
+          console.log('📱 ============================================\n');
         });
 
         // Événement authentification réussie
@@ -142,11 +146,25 @@ class WhatsAppService {
 
         // Initialiser le client
         console.log('🚀 Démarrage de l\'initialisation WhatsApp...');
-        this.client.initialize().catch((error) => {
-          clearTimeout(initTimeout);
-          console.error('❌ Erreur lors de l\'initialisation:', error);
-          reject(error);
+        console.log('📋 Configuration Puppeteer:', {
+          headless: true,
+          timeout: 60000,
+          argsCount: this.client.pupPage ? 'configured' : 'pending'
         });
+        
+        this.client.initialize()
+          .then(() => {
+            console.log('✅ Initialisation promise résolue');
+          })
+          .catch((error) => {
+            clearTimeout(initTimeout);
+            console.error('❌ Erreur lors de l\'initialisation:', error);
+            console.error('📊 Détails de l\'erreur:', {
+              message: error.message,
+              stack: error.stack?.substring(0, 500)
+            });
+            reject(error);
+          });
 
       } catch (error) {
         reject(error);
