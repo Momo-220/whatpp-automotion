@@ -148,13 +148,12 @@ app.listen(PORT, async () => {
   console.log(`   POST http://localhost:${PORT}/api/send`);
   console.log(`   POST http://localhost:${PORT}/api/send/test`);
   
-  // Initialiser WhatsApp
+  // Initialiser WhatsApp (ne pas bloquer le démarrage du serveur)
   console.log('\n📱 Initialisation de WhatsApp...');
-  try {
-    await whatsappService.initialize();
-  } catch (error) {
+  whatsappService.initialize().catch((error) => {
     console.error('❌ Erreur lors de l\'initialisation WhatsApp:', error);
-  }
+    console.log('💡 Le serveur continue de fonctionner. Utilisez /api/whatsapp/reconnect pour réessayer.');
+  });
 });
 
 // Gestion propre de l'arrêt

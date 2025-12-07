@@ -115,8 +115,38 @@ class WhatsAppService {
           console.log('\n💾 Session distante sauvegardée');
         });
 
+        // Gestion des erreurs
+        this.client.on('error', (error) => {
+          console.error('\n❌ Erreur WhatsApp:', error);
+          reject(error);
+        });
+
+        // Timeout pour l'initialisation (2 minutes)
+        const initTimeout = setTimeout(() => {
+          if (!this.isReady && !this.qrCode) {
+            console.error('\n⏰ Timeout: Le QR code n\'a pas été généré dans les 2 minutes');
+            console.log('🔄 Tentative de réinitialisation...');
+            this.client.destroy().catch(() => {});
+            reject(new Error('Timeout: Impossible de générer le QR code. Réessayez.'));
+          }
+        }, 120000); // 2 minutes
+
+        // Nettoyer le timeout si on obtient le QR code ou si on est prêt
+        this.client.on('qr', () => {
+          clearTimeout(initTimeout);
+        });
+
+        this.client.on('ready', () => {
+          clearTimeout(initTimeout);
+        });
+
         // Initialiser le client
-        this.client.initialize().catch(reject);
+        console.log('🚀 Démarrage de l\'initialisation WhatsApp...');
+        this.client.initialize().catch((error) => {
+          clearTimeout(initTimeout);
+          console.error('❌ Erreur lors de l\'initialisation:', error);
+          reject(error);
+        });
 
       } catch (error) {
         reject(error);
@@ -252,7 +282,12 @@ class WhatsAppService {
     console.log('🔄 Réinitialisation complète de WhatsApp...');
     await this.disconnect();
     // Attendre un peu avant de réinitialiser
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Réinitialiser les états
+    this.isReady = false;
+    this.isAuthenticated = false;
+    this.qrCode = null;
+    // Réinitialiser
     await this.initialize();
   }
 
