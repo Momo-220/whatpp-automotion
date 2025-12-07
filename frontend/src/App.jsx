@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 import ExcelUpload from './components/ExcelUpload'
@@ -18,15 +18,18 @@ function App() {
   const [activeTab, setActiveTab] = useState('excel') // 'excel' ou 'manual'
 
   // Vérifier le statut WhatsApp périodiquement
-  useEffect(() => {
-    checkWhatsAppStatus()
-    const interval = setInterval(checkWhatsAppStatus, 3000) // Vérifier toutes les 3 secondes
-    return () => clearInterval(interval)
-  }, [])
-
-  const checkWhatsAppStatus = async () => {
+  const checkWhatsAppStatus = useCallback(async () => {
     try {
-      const statusUrl = `${API_URL}/whatsapp/status`
+      // Construire l'URL - s'assurer que /api est inclus
+      let statusUrl = `${API_URL}/whatsapp/status`
+      
+      // Si API_URL ne se termine pas par /api, l'ajouter
+      if (!API_URL.endsWith('/api')) {
+        statusUrl = API_URL.endsWith('/') 
+          ? `${API_URL}api/whatsapp/status`
+          : `${API_URL}/api/whatsapp/status`
+      }
+      
       console.log('🔍 Vérification du statut WhatsApp:', statusUrl)
       
       const response = await axios.get(statusUrl, {
@@ -48,7 +51,13 @@ function App() {
         error: error.message
       })
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    checkWhatsAppStatus()
+    const interval = setInterval(checkWhatsAppStatus, 5000) // Vérifier toutes les 5 secondes (réduire la fréquence)
+    return () => clearInterval(interval)
+  }, [checkWhatsAppStatus])
 
   const handleFileUpload = (uploadedContacts) => {
     setContacts(uploadedContacts)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import axios from 'axios'
 import { QRCodeSVG } from 'qrcode.react'
 import './WhatsAppStatus.css'
@@ -8,20 +8,95 @@ function WhatsAppStatus({ status }) {
   const [qrCode, setQrCode] = useState(null)
   const [qrError, setQrError] = useState(null)
   const [isFetching, setIsFetching] = useState(false)
+  const intervalRef = useRef(null)
+  const hasQRCodeRef = useRef(false)
+
+  const fetchQRCode = useCallback(async () => {
+    if (isFetching) return // Éviter les requêtes multiples
+    
+    setIsFetching(true)
+    setQrError(null)
+    
+    try {
+      // Construire l'URL complète - s'assurer que /api est inclus
+      let qrCodeUrl = `${API_URL}/whatsapp/qrcode`
+      
+      // Si API_URL ne se termine pas par /api, l'ajouter
+      if (!API_URL.endsWith('/api')) {
+        qrCodeUrl = API_URL.endsWith('/') 
+          ? `${API_URL}api/whatsapp/qrcode`
+          : `${API_URL}/api/whatsapp/qrcode`
+      }
+      
+      console.log('🔍 Fetching QR code from:', qrCodeUrl)
+      
+      const response = await axios.get(qrCodeUrl, {
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.data.success && response.data.qrcode) {
+        setQrCode(response.data.qrcode)
+        setQrError(null)
+        hasQRCodeRef.current = true
+        // Arrêter le polling si on a le QR code
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+      } else {
+        setQrCode(null)
+        if (response.data.message) {
+          setQrError(response.data.message)
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération du QR code:', error)
+      setQrCode(null)
+      if (error.response) {
+        setQrError(`Erreur serveur: ${error.response.status} - ${error.response.data?.error || error.message}`)
+      } else if (error.request) {
+        setQrError('Impossible de se connecter au serveur. Vérifiez que le backend est démarré.')
+      } else {
+        setQrError(`Erreur: ${error.message}`)
+      }
+    } finally {
+      setIsFetching(false)
+    }
+  }, [isFetching])
 
   useEffect(() => {
-    if (status && !status.ready) {
+    // Nettoyer l'intervalle précédent
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+
+    if (status && !status.ready && !hasQRCodeRef.current) {
       // Vérifier immédiatement
       fetchQRCode()
-      // Vérifier le QR code toutes les 2 secondes
-      const interval = setInterval(fetchQRCode, 2000)
-      return () => clearInterval(interval)
+      // Vérifier le QR code toutes les 3 secondes (réduire la fréquence)
+      intervalRef.current = setInterval(() => {
+        if (!hasQRCodeRef.current && !isFetching) {
+          fetchQRCode()
+        }
+      }, 3000)
     } else if (status && status.ready) {
       // Si connecté, nettoyer le QR code
       setQrCode(null)
       setQrError(null)
+      hasQRCodeRef.current = false
     }
-  }, [status])
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [status, fetchQRCode, isFetching])
 
   const fetchQRCode = async () => {
     if (isFetching) return // Éviter les requêtes multiples
