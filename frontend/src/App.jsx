@@ -33,7 +33,7 @@ function App() {
       console.log('🔍 Vérification du statut WhatsApp:', statusUrl)
       
       const response = await axios.get(statusUrl, {
-        timeout: 5000
+        timeout: 3000 // Timeout réduit pour plus de réactivité
       })
       setWhatsappStatus(response.data)
     } catch (error) {
@@ -55,7 +55,7 @@ function App() {
 
   useEffect(() => {
     checkWhatsAppStatus()
-    const interval = setInterval(checkWhatsAppStatus, 5000) // Vérifier toutes les 5 secondes (réduire la fréquence)
+    const interval = setInterval(checkWhatsAppStatus, 2000) // Vérifier toutes les 2 secondes pour plus de réactivité
     return () => clearInterval(interval)
   }, [checkWhatsAppStatus])
 

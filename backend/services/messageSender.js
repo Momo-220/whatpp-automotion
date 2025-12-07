@@ -3,7 +3,8 @@ const WhatsAppService = require('./whatsappService');
 class MessageSender {
   constructor(whatsappService, options = {}) {
     this.whatsapp = whatsappService;
-    this.delay = options.messageDelay || 3000; // Délai par défaut: 3 secondes
+    this.delay = options.messageDelay || 1000; // Délai par défaut: 1 seconde (optimisé)
+    this.batchSize = options.batchSize || 3; // Envoyer 3 messages en parallèle
     this.isRunning = false;
     this.currentProgress = null;
   }
@@ -42,71 +43,81 @@ class MessageSender {
     };
 
     try {
-      for (let i = 0; i < contacts.length; i++) {
-        const contact = contacts[i];
+      // Envoi par batch pour optimiser la vitesse
+      for (let i = 0; i < contacts.length; i += this.batchSize) {
+        const batch = contacts.slice(i, Math.min(i + this.batchSize, contacts.length));
         
-        try {
-          console.log(`📤 Envoi à ${contact.nom} (${contact.telephone})...`);
-          
-          // Envoyer le message tel quel via WhatsApp
-          const sendResult = await this.whatsapp.sendMessage(
-            contact.telephone,
-            message
-          );
+        // Envoyer les messages du batch en parallèle
+        const batchPromises = batch.map(async (contact, batchIndex) => {
+          const globalIndex = i + batchIndex;
+          try {
+            console.log(`📤 Envoi à ${contact.nom} (${contact.telephone})...`);
+            
+            // Envoyer le message tel quel via WhatsApp
+            const sendResult = await this.whatsapp.sendMessage(
+              contact.telephone,
+              message
+            );
 
-          results.success.push({
-            contact: contact.nom,
-            telephone: contact.telephone,
-            message: message,
-            messageId: sendResult.messageId,
-            timestamp: sendResult.timestamp
-          });
-
-          console.log(`✅ Message envoyé avec succès à ${contact.nom}`);
-
-          // Callback de progression
-          if (onProgress) {
-            this.currentProgress = {
-              current: i + 1,
-              total: contacts.length,
+            results.success.push({
               contact: contact.nom,
               telephone: contact.telephone,
-              status: 'success',
-              percentage: Math.round(((i + 1) / contacts.length) * 100)
-            };
-            onProgress(this.currentProgress);
-          }
+              message: message,
+              messageId: sendResult.messageId,
+              timestamp: sendResult.timestamp
+            });
 
-          // Délai entre les messages (éviter le spam et le bannissement)
-          if (i < contacts.length - 1) {
-            console.log(`⏳ Attente de ${this.delay}ms avant le prochain message...`);
-            await this.delayMs(this.delay);
-          }
+            console.log(`✅ Message envoyé avec succès à ${contact.nom}`);
 
-        } catch (error) {
-          console.error(`❌ Erreur pour ${contact.nom}:`, error.message);
-          
-          results.failed.push({
-            contact: contact.nom,
-            telephone: contact.telephone,
-            error: error.message,
-            timestamp: new Date()
-          });
+            // Callback de progression
+            if (onProgress) {
+              this.currentProgress = {
+                current: globalIndex + 1,
+                total: contacts.length,
+                contact: contact.nom,
+                telephone: contact.telephone,
+                status: 'success',
+                percentage: Math.round(((globalIndex + 1) / contacts.length) * 100)
+              };
+              onProgress(this.currentProgress);
+            }
 
-          if (onProgress) {
-            this.currentProgress = {
-              current: i + 1,
-              total: contacts.length,
+            return { success: true, contact };
+
+          } catch (error) {
+            console.error(`❌ Erreur pour ${contact.nom}:`, error.message);
+            
+            results.failed.push({
               contact: contact.nom,
               telephone: contact.telephone,
-              status: 'failed',
               error: error.message,
-              percentage: Math.round(((i + 1) / contacts.length) * 100)
-            };
-            onProgress(this.currentProgress);
-          }
+              timestamp: new Date()
+            });
 
-          // Continuer avec le contact suivant même en cas d'erreur
+            if (onProgress) {
+              this.currentProgress = {
+                current: globalIndex + 1,
+                total: contacts.length,
+                contact: contact.nom,
+                telephone: contact.telephone,
+                status: 'failed',
+                error: error.message,
+                percentage: Math.round(((globalIndex + 1) / contacts.length) * 100)
+              };
+              onProgress(this.currentProgress);
+            }
+
+            return { success: false, contact, error };
+          }
+        });
+
+        // Attendre que tous les messages du batch soient envoyés
+        await Promise.all(batchPromises);
+
+        // Délai entre les batches (éviter le spam et le bannissement)
+        if (i + this.batchSize < contacts.length) {
+          console.log(`⏳ Attente de ${this.delay}ms avant le prochain batch...`);
+          await this.delayMs(this.delay);
         }
       }
 
