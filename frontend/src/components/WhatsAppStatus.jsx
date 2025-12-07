@@ -30,8 +30,15 @@ function WhatsAppStatus({ status }) {
     setQrError(null)
     
     try {
-      const response = await axios.get(`${API_URL}/whatsapp/qrcode`, {
-        timeout: 5000
+      // Construire l'URL complète
+      const qrCodeUrl = `${API_URL}/whatsapp/qrcode`
+      console.log('🔍 Fetching QR code from:', qrCodeUrl)
+      
+      const response = await axios.get(qrCodeUrl, {
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
       
       if (response.data.success && response.data.qrcode) {

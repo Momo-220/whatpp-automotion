@@ -38,7 +38,10 @@ router.get('/status', (req, res) => {
  * GET /api/whatsapp/qrcode
  */
 router.get('/qrcode', (req, res) => {
+  console.log('📱 Requête QR Code reçue depuis:', req.headers.origin || req.headers.referer || 'unknown');
+  
   if (!whatsappService) {
+    console.error('❌ Service WhatsApp non initialisé');
     return res.status(500).json({
       success: false,
       error: 'Service WhatsApp non initialisé'
@@ -46,17 +49,19 @@ router.get('/qrcode', (req, res) => {
   }
 
   const qrCode = whatsappService.getQRCode();
+  const isReady = whatsappService.isClientReady();
   
-  console.log('QR Code request - QR available:', !!qrCode, 'Ready:', whatsappService.isClientReady());
+  console.log('📊 QR Code request - QR available:', !!qrCode, 'Ready:', isReady);
   
   if (qrCode) {
+    console.log('✅ Envoi du QR code au frontend');
     res.json({
       success: true,
       qrcode: qrCode,
       timestamp: new Date().toISOString()
     });
   } else {
-    const isReady = whatsappService.isClientReady();
+    console.log('⏳ QR Code non disponible, statut:', isReady ? 'Connecté' : 'En attente');
     res.json({
       success: false,
       message: isReady 

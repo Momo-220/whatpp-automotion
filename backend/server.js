@@ -13,27 +13,43 @@ const { router: sendRouter, initializeServices } = require('./routes/send');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware CORS
 const corsOptions = {
   origin: function (origin, callback) {
-    // En production, accepter toutes les origines depuis Vercel
+    // Permettre les requêtes sans origine (Postman, curl, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // En production, accepter toutes les origines Vercel
+    if (process.env.NODE_ENV === 'production') {
+      // Accepter toutes les URLs Vercel (production + previews)
+      if (origin.includes('vercel.app') || origin.includes('localhost')) {
+        return callback(null, true);
+      }
+    }
+    
+    // En développement, utiliser les origines configurées
     const allowedOrigins = process.env.FRONTEND_URL 
       ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
       : ['http://localhost:5173', 'http://localhost:3000'];
     
-    // Permettre les requêtes sans origine (Postman, curl, etc.)
-    if (!origin) return callback(null, true);
+    // Vérifier si l'origine est dans la liste autorisée
+    const isAllowed = allowedOrigins.some(allowed => {
+      const cleanAllowed = allowed.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const cleanOrigin = origin.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      return cleanOrigin.includes(cleanAllowed) || cleanAllowed.includes(cleanOrigin);
+    });
     
-    // Vérifier si l'origine est autorisée
-    if (allowedOrigins.some(allowed => origin.includes(allowed.replace(/^https?:\/\//, '').replace(/\/$/, '')))) {
+    if (isAllowed) {
       callback(null, true);
     } else {
-      console.log('⚠️ CORS: Origine non autorisée:', origin);
-      console.log('✅ Origines autorisées:', allowedOrigins);
-      // En production, on peut être plus permissif
-      if (process.env.NODE_ENV === 'production') {
-        callback(null, true); // Accepter toutes les origines en production
+      // En production, être permissif pour Vercel
+      if (process.env.NODE_ENV === 'production' && origin.includes('vercel')) {
+        callback(null, true);
       } else {
+        console.log('⚠️ CORS: Origine non autorisée:', origin);
+        console.log('✅ Origines autorisées:', allowedOrigins);
         callback(new Error('Not allowed by CORS'));
       }
     }
