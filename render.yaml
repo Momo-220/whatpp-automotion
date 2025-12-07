@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: whatsapp-automation-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install && npm run build || echo "No build script"
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MESSAGE_DELAY
+        value: 3000
+      - key: GEMINI_MODEL
+        value: gemini-pro
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: WHATSAPP_SESSION_PATH
+        value: ./whatsapp-session
+
+
+

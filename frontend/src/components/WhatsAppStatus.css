@@ -1,0 +1,139 @@
+.whatsapp-status {
+  margin-bottom: 24px;
+  padding: clamp(16px, 4vw, 20px);
+  background: var(--whatsapp-beige);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.status-loading {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: clamp(16px, 4vw, 20px);
+  font-size: clamp(0.875rem, 2vw, 0.9375rem);
+}
+
+.status-ready,
+.status-waiting {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(12px, 3vw, 16px);
+}
+
+.status-icon {
+  font-size: clamp(2rem, 6vw, 3rem);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.status-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-content h3 {
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  font-weight: 600;
+}
+
+.status-content p {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-size: clamp(0.875rem, 2vw, 0.9375rem);
+  line-height: 1.5;
+}
+
+.qrcode-container {
+  margin-top: 16px;
+  padding: clamp(16px, 4vw, 24px);
+  background: var(--white);
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid var(--whatsapp-green);
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.15);
+}
+
+.qrcode-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(12px, 3vw, 16px);
+  background: var(--white);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.qrcode-wrapper svg {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.qrcode-instructions {
+  color: var(--text-primary);
+  font-size: clamp(0.8125rem, 2vw, 0.875rem);
+  line-height: 1.6;
+  text-align: left;
+  background: var(--whatsapp-beige);
+  padding: clamp(12px, 3vw, 16px);
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.qrcode-instructions strong {
+  color: var(--whatsapp-green-dark);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.qrcode-loading {
+  margin-top: 16px;
+  padding: clamp(20px, 5vw, 40px);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--whatsapp-beige-dark);
+  border-top-color: var(--whatsapp-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.waiting-message {
+  color: var(--whatsapp-green-dark);
+  font-size: clamp(0.875rem, 2vw, 0.9375rem);
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .status-ready,
+  .status-waiting {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .status-icon {
+    font-size: clamp(2rem, 5vw, 2.5rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .whatsapp-status {
+    padding: 12px;
+  }
+}
+

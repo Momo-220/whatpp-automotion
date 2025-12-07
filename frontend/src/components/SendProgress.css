@@ -1,0 +1,65 @@
+.send-progress {
+  margin-top: 24px;
+  padding: clamp(16px, 4vw, 20px);
+  background: var(--whatsapp-green-light);
+  border: 1.5px solid var(--whatsapp-green);
+  border-radius: 8px;
+}
+
+.send-progress h3 {
+  margin-bottom: 12px;
+  color: var(--text-primary);
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  font-weight: 600;
+}
+
+.progress-loading {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: clamp(10px, 2.5vw, 12px);
+  font-size: clamp(0.875rem, 2vw, 0.9375rem);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: clamp(24px, 6vw, 30px);
+  background: var(--white);
+  border-radius: 15px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--whatsapp-green);
+  transition: width 0.3s ease;
+  border-radius: 15px;
+}
+
+.progress-info {
+  color: var(--text-primary);
+}
+
+.progress-info p {
+  margin: 6px 0;
+  font-size: clamp(0.875rem, 2vw, 0.9375rem);
+}
+
+.current-contact {
+  color: var(--whatsapp-green-dark);
+  font-weight: 500;
+}
+
+.progress-error {
+  color: var(--error);
+  font-size: clamp(0.8125rem, 2vw, 0.875rem);
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .send-progress {
+    padding: 12px;
+  }
+}
+

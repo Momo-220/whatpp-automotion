@@ -1,0 +1,57 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Couleurs WhatsApp */
+  --whatsapp-green: #25D366;
+  --whatsapp-green-dark: #128C7E;
+  --whatsapp-green-light: #DCF8C6;
+  --whatsapp-beige: #F0F2F5;
+  --whatsapp-beige-dark: #E4E6EB;
+  --text-primary: #111B21;
+  --text-secondary: #667781;
+  --white: #FFFFFF;
+  --border-color: #E9EDEF;
+  --success: #25D366;
+  --error: #F15C6D;
+  --warning: #FFB800;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--whatsapp-beige);
+  min-height: 100vh;
+  padding: 12px;
+}
+
+#root {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  body {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 4px;
+  }
+}
+
