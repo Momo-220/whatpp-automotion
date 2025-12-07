@@ -1,0 +1,4 @@
+Version 2.0 - Décembre 2024
+Code optimisé avec corrections Puppeteer pour Render
+Build timestamp: 2024-12-07
+
