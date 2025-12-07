@@ -18,6 +18,9 @@ class WhatsAppService {
   async initialize() {
     return new Promise((resolve, reject) => {
       try {
+        console.log('🔧 Création du client WhatsApp...');
+        console.log('📁 Session path:', this.sessionPath);
+        
         this.client = new Client({
           authStrategy: new LocalAuth({
             dataPath: this.sessionPath
@@ -31,16 +34,10 @@ class WhatsAppService {
               '--disable-accelerated-2d-canvas',
               '--no-first-run',
               '--no-zygote',
-              '--disable-gpu',
-              '--disable-software-rasterizer',
-              '--disable-extensions',
               '--single-process',
-              '--disable-blink-features=AutomationControlled',
-              '--disable-features=IsolateOrigins,site-per-process',
-              '--disable-web-security',
-              '--disable-features=VizDisplayCompositor'
+              '--disable-gpu'
             ],
-            timeout: 60000, // 60 secondes de timeout
+            timeout: 90000,
             ignoreHTTPSErrors: true
           },
           webVersionCache: {
@@ -53,12 +50,12 @@ class WhatsAppService {
               clearCache: false
             }
           },
-          // Options supplémentaires pour améliorer la connexion
-          takeoverOnConflict: false,
-          takeoverTimeoutMs: 0,
-          qrMaxRetries: 5, // Nombre de tentatives pour générer le QR code
-          restartOnAuthFail: true
+          qrMaxRetries: 10,
+          restartOnAuthFail: true,
+          takeoverOnConflict: false
         });
+        
+        console.log('✅ Client WhatsApp créé');
 
         // Événement QR Code
         this.client.on('qr', (qr) => {
@@ -146,25 +143,39 @@ class WhatsAppService {
 
         // Initialiser le client
         console.log('🚀 Démarrage de l\'initialisation WhatsApp...');
-        console.log('📋 Configuration Puppeteer:', {
-          headless: true,
-          timeout: 60000,
-          argsCount: this.client.pupPage ? 'configured' : 'pending'
-        });
+        console.log('⏳ Lancement de Puppeteer...');
         
+        // Démarrer l'initialisation
         this.client.initialize()
           .then(() => {
-            console.log('✅ Initialisation promise résolue');
+            console.log('✅ Promise initialize() résolue - En attente du QR code ou de la connexion...');
+            // Ne pas résoudre ici, attendre le QR code ou ready
           })
           .catch((error) => {
             clearTimeout(initTimeout);
-            console.error('❌ Erreur lors de l\'initialisation:', error);
-            console.error('📊 Détails de l\'erreur:', {
-              message: error.message,
-              stack: error.stack?.substring(0, 500)
-            });
+            console.error('❌ ERREUR CRITIQUE lors de l\'initialisation:', error);
+            console.error('📊 Type:', error.constructor.name);
+            console.error('📄 Message:', error.message);
+            if (error.stack) {
+              console.error('📚 Stack (premiers 500 caractères):', error.stack.substring(0, 500));
+            }
             reject(error);
           });
+        
+        // Log supplémentaire après 5 secondes
+        setTimeout(() => {
+          if (!this.qrCode && !this.isReady) {
+            console.log('⏳ 5 secondes écoulées - Toujours en attente du QR code...');
+          }
+        }, 5000);
+        
+        // Log supplémentaire après 15 secondes
+        setTimeout(() => {
+          if (!this.qrCode && !this.isReady) {
+            console.log('⏳ 15 secondes écoulées - Toujours en attente du QR code...');
+            console.log('💡 Si le QR code n\'apparaît pas, utilisez /api/whatsapp/reconnect');
+          }
+        }, 15000);
 
       } catch (error) {
         reject(error);

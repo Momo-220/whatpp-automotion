@@ -150,19 +150,38 @@ app.listen(PORT, async () => {
   console.log(`   POST http://localhost:${PORT}/api/send/test`);
   
   // Initialiser WhatsApp (ne pas bloquer le démarrage du serveur)
-  console.log('\n📱 Initialisation de WhatsApp...');
-  console.log('⏳ Attente de la génération du QR code...');
+  console.log('\n📱 ============================================');
+  console.log('📱 INITIALISATION WHATSAPP');
+  console.log('📱 ============================================');
   
-  whatsappService.initialize()
-    .then(() => {
+  let initAttempts = 0;
+  const maxInitAttempts = 3;
+  
+  const attemptInitialize = async () => {
+    initAttempts++;
+    console.log(`\n🔄 Tentative d'initialisation #${initAttempts}/${maxInitAttempts}...`);
+    
+    try {
+      await whatsappService.initialize();
       console.log('✅ WhatsApp initialisé avec succès');
-    })
-    .catch((error) => {
-      console.error('❌ Erreur lors de l\'initialisation WhatsApp:', error);
-      console.error('📊 Type d\'erreur:', error.constructor.name);
-      console.error('📄 Message:', error.message);
-      console.log('💡 Le serveur continue de fonctionner. Utilisez /api/whatsapp/reconnect pour réessayer.');
-    });
+    } catch (error) {
+      console.error(`❌ Erreur lors de l'initialisation (tentative ${initAttempts}):`, error.message);
+      
+      if (initAttempts < maxInitAttempts) {
+        console.log(`⏳ Nouvelle tentative dans 10 secondes...`);
+        setTimeout(() => {
+          attemptInitialize();
+        }, 10000);
+      } else {
+        console.error('❌ Échec après', maxInitAttempts, 'tentatives');
+        console.log('💡 Le serveur continue de fonctionner.');
+        console.log('💡 Utilisez POST /api/whatsapp/reconnect pour réessayer manuellement.');
+      }
+    }
+  };
+  
+  // Démarrer la première tentative
+  attemptInitialize();
   
   // Vérifier périodiquement si le QR code est généré
   setInterval(() => {
@@ -170,8 +189,12 @@ app.listen(PORT, async () => {
     const isReady = whatsappService.isClientReady();
     if (!isReady && !qrCode) {
       console.log('⏳ En attente du QR code... (Client prêt:', isReady, ', QR:', !!qrCode, ')');
+    } else if (qrCode) {
+      console.log('✅ QR Code disponible !');
+    } else if (isReady) {
+      console.log('✅ WhatsApp connecté !');
     }
-  }, 10000); // Vérifier toutes les 10 secondes
+  }, 15000); // Vérifier toutes les 15 secondes
 });
 
 // Gestion propre de l'arrêt
