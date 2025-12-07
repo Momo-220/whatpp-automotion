@@ -20,16 +20,25 @@ function App() {
   // Vérifier le statut WhatsApp périodiquement
   useEffect(() => {
     checkWhatsAppStatus()
-    const interval = setInterval(checkWhatsAppStatus, 5000)
+    const interval = setInterval(checkWhatsAppStatus, 3000) // Vérifier toutes les 3 secondes
     return () => clearInterval(interval)
   }, [])
 
   const checkWhatsAppStatus = async () => {
     try {
-      const response = await axios.get(`${API_URL}/whatsapp/status`)
+      const response = await axios.get(`${API_URL}/whatsapp/status`, {
+        timeout: 5000
+      })
       setWhatsappStatus(response.data)
     } catch (error) {
       console.error('Erreur lors de la vérification du statut:', error)
+      // En cas d'erreur, définir un statut par défaut
+      setWhatsappStatus({
+        ready: false,
+        authenticated: false,
+        hasQRCode: false,
+        error: error.message
+      })
     }
   }
 

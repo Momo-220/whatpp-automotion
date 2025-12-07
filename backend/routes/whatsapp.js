@@ -47,17 +47,23 @@ router.get('/qrcode', (req, res) => {
 
   const qrCode = whatsappService.getQRCode();
   
+  console.log('QR Code request - QR available:', !!qrCode, 'Ready:', whatsappService.isClientReady());
+  
   if (qrCode) {
     res.json({
       success: true,
-      qrcode: qrCode
+      qrcode: qrCode,
+      timestamp: new Date().toISOString()
     });
   } else {
+    const isReady = whatsappService.isClientReady();
     res.json({
       success: false,
-      message: whatsappService.isClientReady() 
+      message: isReady 
         ? 'WhatsApp est déjà connecté' 
-        : 'QR Code non disponible. Veuillez attendre...'
+        : 'QR Code non disponible. Le backend génère le QR code, veuillez attendre quelques secondes...',
+      isReady: isReady,
+      waiting: !isReady
     });
   }
 });

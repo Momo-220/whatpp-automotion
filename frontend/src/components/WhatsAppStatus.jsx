@@ -6,6 +6,8 @@ import API_URL from '../config/api'
 
 function WhatsAppStatus({ status }) {
   const [qrCode, setQrCode] = useState(null)
+  const [qrError, setQrError] = useState(null)
+  const [isFetching, setIsFetching] = useState(false)
 
   useEffect(() => {
     if (status && !status.ready) {
@@ -17,20 +19,42 @@ function WhatsAppStatus({ status }) {
     } else if (status && status.ready) {
       // Si connecté, nettoyer le QR code
       setQrCode(null)
+      setQrError(null)
     }
   }, [status])
 
   const fetchQRCode = async () => {
+    if (isFetching) return // Éviter les requêtes multiples
+    
+    setIsFetching(true)
+    setQrError(null)
+    
     try {
-      const response = await axios.get(`${API_URL}/whatsapp/qrcode`)
+      const response = await axios.get(`${API_URL}/whatsapp/qrcode`, {
+        timeout: 5000
+      })
+      
       if (response.data.success && response.data.qrcode) {
         setQrCode(response.data.qrcode)
+        setQrError(null)
       } else {
         setQrCode(null)
+        if (response.data.message) {
+          setQrError(response.data.message)
+        }
       }
     } catch (error) {
       console.error('Erreur lors de la récupération du QR code:', error)
       setQrCode(null)
+      if (error.response) {
+        setQrError(`Erreur serveur: ${error.response.status} - ${error.response.data?.error || error.message}`)
+      } else if (error.request) {
+        setQrError('Impossible de se connecter au serveur. Vérifiez que le backend est démarré.')
+      } else {
+        setQrError(`Erreur: ${error.message}`)
+      }
+    } finally {
+      setIsFetching(false)
     }
   }
 
@@ -82,10 +106,30 @@ function WhatsAppStatus({ status }) {
                   4. Scannez ce QR code
                 </p>
               </div>
+            ) : qrError ? (
+              <div className="qrcode-error">
+                <div className="error-icon">⚠️</div>
+                <p className="error-message">{qrError}</p>
+                <button 
+                  onClick={fetchQRCode} 
+                  className="retry-button"
+                  disabled={isFetching}
+                >
+                  {isFetching ? '⏳ Vérification...' : '🔄 Réessayer'}
+                </button>
+                <p className="error-help">
+                  💡 Le QR code apparaîtra automatiquement quand le backend sera prêt.
+                  <br />
+                  Vérifiez les logs du backend sur Render pour voir le QR code dans la console.
+                </p>
+              </div>
             ) : (
               <div className="qrcode-loading">
                 <div className="loading-spinner"></div>
                 <p className="waiting-message">Génération du QR code en cours...</p>
+                <p className="waiting-help">
+                  Le backend génère le QR code. Cela peut prendre quelques secondes.
+                </p>
               </div>
             )}
           </div>

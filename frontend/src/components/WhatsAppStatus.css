@@ -118,6 +118,68 @@
   margin-top: 8px;
 }
 
+.waiting-help {
+  color: var(--text-secondary);
+  font-size: clamp(0.75rem, 1.8vw, 0.8125rem);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.qrcode-error {
+  margin-top: 16px;
+  padding: clamp(20px, 5vw, 30px);
+  background: #fff3cd;
+  border: 2px solid var(--warning);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 3em;
+  margin-bottom: 12px;
+}
+
+.error-message {
+  color: #856404;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  background: var(--warning);
+  color: var(--white);
+  border: none;
+  padding: clamp(10px, 2.5vw, 12px) clamp(20px, 5vw, 24px);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(0.875rem, 2vw, 0.9375rem);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.retry-button:hover:not(:disabled) {
+  background: #ffc107;
+  transform: translateY(-1px);
+}
+
+.retry-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-help {
+  color: var(--text-secondary);
+  font-size: clamp(0.75rem, 1.8vw, 0.8125rem);
+  margin-top: 12px;
+  line-height: 1.6;
+  text-align: left;
+  background: var(--white);
+  padding: clamp(10px, 2.5vw, 12px);
+  border-radius: 6px;
+}
+
 @media (max-width: 768px) {
   .status-ready,
   .status-waiting {

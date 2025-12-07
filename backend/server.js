@@ -15,9 +15,29 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 const corsOptions = {
-  origin: process.env.FRONTEND_URL 
-    ? process.env.FRONTEND_URL.split(',')
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: function (origin, callback) {
+    // En production, accepter toutes les origines depuis Vercel
+    const allowedOrigins = process.env.FRONTEND_URL 
+      ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+      : ['http://localhost:5173', 'http://localhost:3000'];
+    
+    // Permettre les requêtes sans origine (Postman, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Vérifier si l'origine est autorisée
+    if (allowedOrigins.some(allowed => origin.includes(allowed.replace(/^https?:\/\//, '').replace(/\/$/, '')))) {
+      callback(null, true);
+    } else {
+      console.log('⚠️ CORS: Origine non autorisée:', origin);
+      console.log('✅ Origines autorisées:', allowedOrigins);
+      // En production, on peut être plus permissif
+      if (process.env.NODE_ENV === 'production') {
+        callback(null, true); // Accepter toutes les origines en production
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };

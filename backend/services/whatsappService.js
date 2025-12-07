@@ -31,8 +31,21 @@ class WhatsAppService {
               '--disable-accelerated-2d-canvas',
               '--no-first-run',
               '--no-zygote',
-              '--disable-gpu'
+              '--disable-gpu',
+              '--disable-software-rasterizer',
+              '--disable-extensions',
+              '--single-process'
             ]
+          },
+          webVersionCache: {
+            type: 'remote',
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wppconnect/main/wppconnect/src/lib/wapi.js',
+            options: {
+              restartOnAuthFail: true,
+              cacheEnabled: true,
+              cachePath: './.wwebjs_cache/',
+              clearCache: false
+            }
           }
         });
 
