@@ -15,9 +15,9 @@ services:
       - key: PORT
         value: 10000
       - key: MESSAGE_DELAY
-        value: 500
+        value: 150
       - key: BATCH_SIZE
-        value: 5
+        value: 10
       - key: FRONTEND_URL
         value: https://whatpp-automotion.vercel.app
     autoDeploy: true
