@@ -26,7 +26,7 @@ function MessageEditor({ message, onMessageChange, contactsCount }) {
         </span>
         {message.length > 0 && (
           <span className="estimated-time">
-            ⏱️ Temps estimé: ~{Math.ceil((contactsCount * 0.15) / 60)} minute(s)
+            ⏱️ Temps estimé: ~{Math.ceil((contactsCount * 0.5) / 60)} minute(s)
           </span>
         )}
       </div>

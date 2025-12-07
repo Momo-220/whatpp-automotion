@@ -3,8 +3,8 @@ const WhatsAppService = require('./whatsappService');
 class MessageSender {
   constructor(whatsappService, options = {}) {
     this.whatsapp = whatsappService;
-    this.delay = options.messageDelay || 150; // Délai par défaut: 0.15 seconde (ultra rapide)
-    this.batchSize = options.batchSize || 10; // Envoyer 10 messages en parallèle (max speed)
+    this.delay = options.messageDelay || 500; // Délai par défaut: 0.5 seconde (très rapide)
+    this.batchSize = options.batchSize || 5; // Envoyer 5 messages en parallèle
     this.isRunning = false;
     this.currentProgress = null;
   }
