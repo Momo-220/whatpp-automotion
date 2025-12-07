@@ -6,7 +6,7 @@ services:
     region: frankfurt
     plan: free
     rootDir: backend
-    buildCommand: npm install --production
+    buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -18,10 +18,8 @@ services:
         value: 500
       - key: BATCH_SIZE
         value: 5
-      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
-        value: true
-      - key: PUPPETEER_EXECUTABLE_PATH
-        value: /usr/bin/google-chrome-stable
+      - key: FRONTEND_URL
+        value: https://whatpp-automotion.vercel.app
     autoDeploy: true
 
   # Frontend Static Site
@@ -32,7 +30,7 @@ services:
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://whatpp-automotion.onrender.com/api
     routes:
       - type: rewrite
         source: /*
