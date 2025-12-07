@@ -102,6 +102,31 @@ app.get('/', (req, res) => {
   });
 });
 
+// Route /api pour afficher les endpoints disponibles
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'API WhatsApp Automation',
+    version: '1.0.0',
+    baseUrl: '/api',
+    endpoints: {
+      health: '/api/health',
+      upload: '/api/upload',
+      whatsapp: {
+        base: '/api/whatsapp',
+        status: '/api/whatsapp/status',
+        qrcode: '/api/whatsapp/qrcode',
+        info: '/api/whatsapp/info',
+        disconnect: '/api/whatsapp/disconnect (POST)'
+      },
+      send: {
+        base: '/api/send',
+        test: '/api/send/test (POST)'
+      }
+    },
+    documentation: 'Accédez à /api/health pour vérifier le statut du serveur'
+  });
+});
+
 // Initialiser WhatsApp Service
 const whatsappService = new WhatsAppService(sessionDir);
 initializeWhatsAppService(whatsappService);

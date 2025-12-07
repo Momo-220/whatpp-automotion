@@ -12,7 +12,8 @@ function WhatsAppStatus({ status }) {
   const hasQRCodeRef = useRef(false)
 
   const fetchQRCode = useCallback(async () => {
-    if (isFetching) return // Éviter les requêtes multiples
+    // Utiliser une ref pour éviter les requêtes multiples
+    if (isFetching) return
     
     setIsFetching(true)
     setQrError(null)
@@ -65,7 +66,7 @@ function WhatsAppStatus({ status }) {
     } finally {
       setIsFetching(false)
     }
-  }, [isFetching])
+  }, [])
 
   useEffect(() => {
     // Nettoyer l'intervalle précédent
@@ -96,49 +97,7 @@ function WhatsAppStatus({ status }) {
         intervalRef.current = null
       }
     }
-  }, [status, fetchQRCode, isFetching])
-
-  const fetchQRCode = async () => {
-    if (isFetching) return // Éviter les requêtes multiples
-    
-    setIsFetching(true)
-    setQrError(null)
-    
-    try {
-      // Construire l'URL complète
-      const qrCodeUrl = `${API_URL}/whatsapp/qrcode`
-      console.log('🔍 Fetching QR code from:', qrCodeUrl)
-      
-      const response = await axios.get(qrCodeUrl, {
-        timeout: 5000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (response.data.success && response.data.qrcode) {
-        setQrCode(response.data.qrcode)
-        setQrError(null)
-      } else {
-        setQrCode(null)
-        if (response.data.message) {
-          setQrError(response.data.message)
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération du QR code:', error)
-      setQrCode(null)
-      if (error.response) {
-        setQrError(`Erreur serveur: ${error.response.status} - ${error.response.data?.error || error.message}`)
-      } else if (error.request) {
-        setQrError('Impossible de se connecter au serveur. Vérifiez que le backend est démarré.')
-      } else {
-        setQrError(`Erreur: ${error.message}`)
-      }
-    } finally {
-      setIsFetching(false)
-    }
-  }
+  }, [status, fetchQRCode])
 
   if (!status) {
     return (
