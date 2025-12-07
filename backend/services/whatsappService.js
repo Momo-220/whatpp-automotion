@@ -35,11 +35,13 @@ class WhatsAppService {
               '--no-first-run',
               '--no-zygote',
               '--single-process',
-              '--disable-gpu'
+              '--disable-gpu',
+              '--disable-software-rasterizer'
             ],
-            timeout: 120000, // 2 minutes max pour initialisation
+            timeout: 120000,
             ignoreHTTPSErrors: true,
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+            // Utiliser Chrome de Render au lieu de télécharger Chromium
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
           },
           webVersionCache: {
             type: 'remote',

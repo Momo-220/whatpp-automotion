@@ -1,23 +1,39 @@
 services:
+  # Backend Node.js
   - type: web
-    name: whatsapp-automation-backend
-    env: node
+    name: whatpp-automotion-backend
+    runtime: node
+    region: frankfurt
     plan: free
-    buildCommand: cd backend && npm install && npm run build || echo "No build script"
-    startCommand: cd backend && npm start
+    rootDir: backend
+    buildCommand: npm install --production
+    startCommand: npm start
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
       - key: MESSAGE_DELAY
-        value: 3000
-      - key: GEMINI_MODEL
-        value: gemini-pro
-      - key: UPLOAD_DIR
-        value: ./uploads
-      - key: WHATSAPP_SESSION_PATH
-        value: ./whatsapp-session
+        value: 500
+      - key: BATCH_SIZE
+        value: 5
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: true
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/google-chrome-stable
+    autoDeploy: true
 
-
-
+  # Frontend Static Site
+  - type: web
+    name: whatpp-automotion-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
