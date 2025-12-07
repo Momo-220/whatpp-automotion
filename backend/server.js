@@ -150,51 +150,16 @@ app.listen(PORT, async () => {
   console.log(`   POST http://localhost:${PORT}/api/send/test`);
   
   // Initialiser WhatsApp (ne pas bloquer le démarrage du serveur)
-  console.log('\n📱 ============================================');
-  console.log('📱 INITIALISATION WHATSAPP');
-  console.log('📱 ============================================');
+  console.log('\n📱 Initialisation de WhatsApp...');
   
-  let initAttempts = 0;
-  const maxInitAttempts = 3;
-  
-  const attemptInitialize = async () => {
-    initAttempts++;
-    console.log(`\n🔄 Tentative d'initialisation #${initAttempts}/${maxInitAttempts}...`);
-    
-    try {
-      await whatsappService.initialize();
-      console.log('✅ WhatsApp initialisé avec succès');
-    } catch (error) {
-      console.error(`❌ Erreur lors de l'initialisation (tentative ${initAttempts}):`, error.message);
-      
-      if (initAttempts < maxInitAttempts) {
-        console.log(`⏳ Nouvelle tentative dans 10 secondes...`);
-        setTimeout(() => {
-          attemptInitialize();
-        }, 10000);
-      } else {
-        console.error('❌ Échec après', maxInitAttempts, 'tentatives');
-        console.log('💡 Le serveur continue de fonctionner.');
-        console.log('💡 Utilisez POST /api/whatsapp/reconnect pour réessayer manuellement.');
-      }
-    }
-  };
-  
-  // Démarrer la première tentative
-  attemptInitialize();
-  
-  // Vérifier périodiquement si le QR code est généré
-  setInterval(() => {
-    const qrCode = whatsappService.getQRCode();
-    const isReady = whatsappService.isClientReady();
-    if (!isReady && !qrCode) {
-      console.log('⏳ En attente du QR code... (Client prêt:', isReady, ', QR:', !!qrCode, ')');
-    } else if (qrCode) {
-      console.log('✅ QR Code disponible !');
-    } else if (isReady) {
-      console.log('✅ WhatsApp connecté !');
-    }
-  }, 15000); // Vérifier toutes les 15 secondes
+  whatsappService.initialize()
+    .then(() => {
+      console.log('✅ WhatsApp prêt');
+    })
+    .catch((error) => {
+      console.error('❌ Erreur WhatsApp:', error.message);
+      console.log('💡 Le serveur continue. Utilisez POST /api/whatsapp/reconnect pour réessayer.');
+    })
 });
 
 // Gestion propre de l'arrêt

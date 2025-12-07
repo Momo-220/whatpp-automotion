@@ -19,23 +19,8 @@ function WhatsAppStatus({ status }) {
     setQrError(null)
     
     try {
-      // Construire l'URL complète - s'assurer que /api est inclus
-      let qrCodeUrl = `${API_URL}/whatsapp/qrcode`
-      
-      // Si API_URL ne se termine pas par /api, l'ajouter
-      if (!API_URL.endsWith('/api')) {
-        qrCodeUrl = API_URL.endsWith('/') 
-          ? `${API_URL}api/whatsapp/qrcode`
-          : `${API_URL}/api/whatsapp/qrcode`
-      }
-      
-      console.log('🔍 Fetching QR code from:', qrCodeUrl)
-      
-      const response = await axios.get(qrCodeUrl, {
-        timeout: 2000, // Timeout ultra court
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const response = await axios.get(`${API_URL}/whatsapp/qrcode`, {
+        timeout: 3000
       })
       
       if (response.data.success && response.data.qrcode) {
@@ -54,14 +39,13 @@ function WhatsAppStatus({ status }) {
         }
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération du QR code:', error)
       setQrCode(null)
       if (error.response) {
-        setQrError(`Erreur serveur: ${error.response.status} - ${error.response.data?.error || error.message}`)
+        setQrError(`Erreur serveur (${error.response.status})`)
       } else if (error.request) {
-        setQrError('Impossible de se connecter au serveur. Vérifiez que le backend est démarré.')
+        setQrError('Backend non accessible. Vérifiez le déploiement.')
       } else {
-        setQrError(`Erreur: ${error.message}`)
+        setQrError('Erreur de connexion')
       }
     } finally {
       setIsFetching(false)

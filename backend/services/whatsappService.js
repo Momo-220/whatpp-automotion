@@ -116,24 +116,18 @@ class WhatsAppService {
           reject(error);
         });
 
-        // Timeout pour l'initialisation (90 secondes)
+        // Timeout pour l'initialisation (180 secondes = 3 minutes pour Render)
         const initTimeout = setTimeout(() => {
           if (!this.isReady && !this.qrCode) {
-            console.error('\n⏰ Timeout: Le QR code n\'a pas été généré dans les 90 secondes');
-            console.log('🔄 Tentative de réinitialisation...');
+            console.error('\n⏰ Timeout: initialisation trop longue (3 min)');
             this.client.destroy().catch(() => {});
-            reject(new Error('Timeout: Impossible de générer le QR code. Réessayez.'));
+            reject(new Error('Timeout: Impossible d\'initialiser WhatsApp.'));
           }
-        }, 90000); // 90 secondes
+        }, 180000); // 3 minutes
 
-        // Nettoyer le timeout si on obtient le QR code ou si on est prêt
-        this.client.on('qr', () => {
-          clearTimeout(initTimeout);
-        });
-
-        this.client.on('ready', () => {
-          clearTimeout(initTimeout);
-        });
+        // Nettoyer le timeout si succès
+        this.client.on('qr', () => clearTimeout(initTimeout));
+        this.client.on('ready', () => clearTimeout(initTimeout));
 
         // Initialiser le client
         console.log('🚀 Démarrage de l\'initialisation WhatsApp...');
@@ -156,20 +150,14 @@ class WhatsAppService {
             reject(error);
           });
         
-        // Log supplémentaire après 5 secondes
-        setTimeout(() => {
+        // Log toutes les 30 secondes
+        const logInterval = setInterval(() => {
           if (!this.qrCode && !this.isReady) {
-            console.log('⏳ 5 secondes écoulées - Toujours en attente du QR code...');
+            console.log('⏳ En attente du QR code...');
+          } else {
+            clearInterval(logInterval);
           }
-        }, 5000);
-        
-        // Log supplémentaire après 15 secondes
-        setTimeout(() => {
-          if (!this.qrCode && !this.isReady) {
-            console.log('⏳ 15 secondes écoulées - Toujours en attente du QR code...');
-            console.log('💡 Si le QR code n\'apparaît pas, utilisez /api/whatsapp/reconnect');
-          }
-        }, 15000);
+        }, 30000);
 
       } catch (error) {
         reject(error);

@@ -20,30 +20,12 @@ function App() {
   // Vérifier le statut WhatsApp périodiquement
   const checkWhatsAppStatus = useCallback(async () => {
     try {
-      // Construire l'URL - s'assurer que /api est inclus
-      let statusUrl = `${API_URL}/whatsapp/status`
-      
-      // Si API_URL ne se termine pas par /api, l'ajouter
-      if (!API_URL.endsWith('/api')) {
-        statusUrl = API_URL.endsWith('/') 
-          ? `${API_URL}api/whatsapp/status`
-          : `${API_URL}/api/whatsapp/status`
-      }
-      
-      console.log('🔍 Vérification du statut WhatsApp:', statusUrl)
-      
-      const response = await axios.get(statusUrl, {
-        timeout: 2000 // Timeout ultra court pour réactivité maximale
+      const response = await axios.get(`${API_URL}/whatsapp/status`, {
+        timeout: 3000
       })
       setWhatsappStatus(response.data)
     } catch (error) {
-      console.error('❌ Erreur lors de la vérification du statut:', error)
-      console.error('📡 URL utilisée:', `${API_URL}/whatsapp/status`)
-      if (error.response) {
-        console.error('📊 Status:', error.response.status)
-        console.error('📄 Data:', error.response.data)
-      }
-      // En cas d'erreur, définir un statut par défaut
+      // En cas d'erreur, définir un statut par défaut (silencieux pour éviter le spam de logs)
       setWhatsappStatus({
         ready: false,
         authenticated: false,
